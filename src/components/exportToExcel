@@ -1,0 +1,35 @@
+import React,{useRef} from 'react';
+import XLSX from 'xlsx';
+const ExportToExcel = ({ data, startDate, endDate }) => {
+  // Function to filter data based on start and end dates
+  const hiddenRef=useRef(null);
+  const filteredData = data.filter(item => {
+    //const itemDate = new Date(item.date); // Assuming each data item has a 'date' property
+    return item.date >= startDate && item.date <= endDate;
+  });
+  // Function to handle export click
+  const handleExportClick = () => {
+    // Convert data to Excel workbook
+    const workbook = XLSX.utils.book_new();
+    const worksheet = XLSX.utils.json_to_sheet(filteredData);
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'Sheet1');
+    // Convert workbook to blob
+    const excelBuffer = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' });
+    const blob = new Blob([excelBuffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+    // Create a URL for the Blob
+    const url = URL.createObjectURL(blob);
+    hiddenRef.current.href=url;
+    hiddenRef.current.download='exported_data.xlsx';
+    hiddenRef.current.click();
+    
+    URL.revokeObjectURL(url);
+   // document.body.removeChild(a);
+  };
+  return (
+    <div>
+    <button onClick={handleExportClick}>Export to Excel</button>
+    <a ref={hiddenRef} style={{display:'none'}}></a>
+    </div>
+  );
+};
+export default ExportToExcel;
